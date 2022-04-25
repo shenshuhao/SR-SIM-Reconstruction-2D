@@ -10,7 +10,8 @@ x = linspace(0,w1-1,w1);
 y = linspace(0,w2-1,w2);
 [X,Y] = meshgrid(x,y);
 
-object = imread('Beads-obj.tif');
+filename='Beads-obj';
+object = imread([filename '.tif']);
 object = double(object);
 figure,imshow(object,[]);title('Object');
 freq_obj=abs(fftshift(fft2(object)));
@@ -25,18 +26,21 @@ figure,imshow(abs(otf.^0.1),[]);title('OTF');
 m = 0.8;
 f = 0.3;
 thita0=  0;
-thita1 = 2*pi/3;
-thita2 = 1*pi/3;
+thita1 = 5*pi/6;
+thita2 = 1*pi/6;
 phase1 = 0*pi/3;
 phase2 = 2*pi/3;
 phase3 = 4*pi/3;
 
-mask1 = 1+m*sin(f*(X*sin(thita0)+Y*cos(thita0))+phase1);
-% figure,imagesc(mask1);
-mask2 = 1+m*sin(f*(X*sin(thita0)+Y*cos(thita0))+phase2);
-% figure,imagesc(mask2);
-mask3 = 1+m*sin(f*(X*sin(thita0)+Y*cos(thita0))+phase3);
-% figure,imagesc(mask3);
+grating1 = 1+m*sin(f*x+phase1);
+grating2 = 1+m*sin(f*x+phase2);
+grating3 = 1+m*sin(f*x+phase3);
+
+for i = 1:w1
+    mask1(i,:) = grating1;
+    mask2(i,:) = grating2;
+    mask3(i,:) = grating3;
+end
 mask4 = 1+m*sin(f*(X*sin(thita1)+Y*cos(thita1))+phase1);
 % figure,imagesc(mask4);
 mask5 = 1+m*sin(f*(X*sin(thita1)+Y*cos(thita1))+phase2);
@@ -140,7 +144,7 @@ otf8 = fft2( (ifft2(otf)).*exp( +1i.*2*pi*(kA(3)/w1.*(X-wo1) + kA(4)/w2.*(Y-wo2)
 otf9 = fft2( (ifft2(otf)).*exp( -1i.*2*pi*(kA(3)/w1.*(X-wo1) + kA(4)/w2.*(Y-wo2)) ));
 
 
-sigma=0.5;
+sigma=0.2;
 FS10=FS1./(abs(otf).^2+sigma);
 Shift_F20=Shift_F2./(abs(otf2).^2+sigma);
 Shift_F30=Shift_F3./(abs(otf3).^2+sigma);
@@ -152,6 +156,7 @@ Shift_F80=Shift_F8./(abs(otf8).^2+sigma);
 Shift_F90=Shift_F9./(abs(otf9).^2+sigma);
 
 FSum=FS10+Shift_F20+Shift_F30+FS40+Shift_F50+Shift_F60+FS70+Shift_F80+Shift_F90;
+% FSum=FS10+Shift_F20+Shift_F30;
 % figure,imagesc(abs(FSum.^(1/10)));
 
 
@@ -169,5 +174,5 @@ DSim=DSim/max(max(DSim))*65536;
 DSim=uint16(DSim);
 cm=cm/max(max(cm))*65536;
 cm=uint16(cm);
-imwrite(DSim,'Super_resolution_beads.tif');
-imwrite(cm,'Normal_resolution_beads.tif');
+imwrite(DSim,['Super_resolution_' filename '.tif']);
+imwrite(cm,['Normal_resolution_' filename '.tif']);
